@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python IDE</title>
+    <style>
+        /* Previous styles remain the same */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.5;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 64rem;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .card-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .button {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: white;
+        }
+
+        .run-button {
+            background-color: #22c55e;
+        }
+
+        .format-button {
+            background-color: #3b82f6;
+        }
+
+        .button:hover:not(:disabled) {
+            filter: brightness(90%);
+        }
+
+        .button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .button svg {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            font-family: monospace;
+            padding: 0.5rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            tab-size: 4;
+        }
+
+        .code-editor {
+            height: 16rem;
+            background-color: #111827;
+            color: #f3f4f6;
+            resize: none;
+        }
+
+        .input-editor {
+            height: 6rem;
+            resize: none;
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .output-console {
+            background-color: black;
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            min-height: 100px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre;
+            overflow-y: auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .error-text {
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>Python IDE <span id="loading-text">(Loading...)</span></span>
+                    <div class="button-container">
+                        <button id="format-button" class="button format-button" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10H3M21 6H3M21 14H3M21 18H3"/>
+                            </svg>
+                            Format Code
+                        </button>
+                        <button id="run-button" class="button run-button" disabled>
+                            <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            <svg id="loader-icon" class="spin" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="2" x2="12" y2="6"></line>
+                                <line x1="12" y1="18" x2="12" y2="22"></line>
+                                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                                <line x1="2" y1="12" x2="6" y2="12"></line>
+                                <line x1="18" y1="12" x2="22" y2="12"></line>
+                                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                            </svg>
+                            <span id="button-text">Run</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="grid">
+                    <div>
+                        <textarea id="code-editor" class="code-editor" spellcheck="false" placeholder="Write your Python code here..."># Example: Simple sorting algorithm
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    mid = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + mid + quicksort(right)
+
+# Read input
+n = int(input())
+numbers = list(map(int, input().split()))
+
+# Sort and print result
+sorted_numbers = quicksort(numbers)
+print("Sorted array:", sorted_numbers)</textarea>
+                    </div>
+                    <div>
+                        <div class="section-title">Custom Input</div>
+                        <textarea id="input-editor" class="input-editor" spellcheck="false" placeholder="Enter your input here (each input on a new line)">5
+3 1 4 1 5</textarea>
+                    </div>
+                    <div>
+                        <div class="section-title">Output</div>
+                        <div id="output-console" class="output-console">Run code to see output...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let pyodide = null;
+        let isRunning = false;
+        let isLoading = true;
+
+        // DOM elements
+        const elements = {
+            loadingText: null,
+            runButton: null,
+            formatButton: null,
+            buttonText: null,
+            playIcon: null,
+            loaderIcon: null,
+            outputConsole: null,
+            codeEditor: null,
+            inputEditor: null
+        };
+
+        // Initialize DOM elements
+        function initializeElements() {
+            elements.loadingText = document.getElementById('loading-text');
+            elements.runButton = document.getElementById('run-button');
+            elements.formatButton = document.getElementById('format-button');
+            elements.buttonText = document.getElementById('button-text');
+            elements.playIcon = document.getElementById('play-icon');
+            elements.loaderIcon = document.getElementById('loader-icon');
+            elements.outputConsole = document.getElementById('output-console');
+            elements.codeEditor = document.getElementById('code-editor');
+            elements.inputEditor = document.getElementById('input-editor');
+
+            // Add event listeners
+            if (elements.runButton) {
+                elements.runButton.addEventListener('click', runCode);
+            }
+            if (elements.formatButton) {
+                elements.formatButton.addEventListener('click', formatCode);
+            }
+            if (elements.codeEditor) {
+                elements.codeEditor.addEventListener('keydown', handleTabKey);
+            }
+        }
+
+        // Handle tab key in code editor
+        function handleTabKey(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const spaces = '    '; // 4 spaces for indentation
+                this.value = this.value.substring(0, start) + spaces + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + spaces.length;
+            }
+        }
+
+        // Format Python code
+        function formatCode() {
+            if (!elements.codeEditor) return;
+            
+            const code = elements.codeEditor.value;
+            
+            // Convert all indentation to spaces
+            const lines = code.split('\n');
+            const formattedLines = lines.map(line => {
+                // Replace tabs with spaces and normalize indentation
+                const trimmed = line.trimLeft();
+                const indentLevel = (line.length - trimmed.length) / 4;
+                return '    '.repeat(Math.floor(indentLevel)) + trimmed;
+            });
+            
+            elements.codeEditor.value = formattedLines.join('\n');
+        }
+
+        // Load Pyodide
+        async function loadPyodide() {
+            try {
+                const script = document.createElement('script');
+                script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js";
+                
+                await new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.body.appendChild(script);
+                });
+
+                if (typeof loadPyodide === 'function') {
+                    pyodide = await window.loadPyodide({
+                        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/"
+                    });
+                    
+                    if (elements.loadingText) {
+                        elements.loadingText.style.display = 'none';
+                    }
+                    if (elements.runButton) {
+                        elements.runButton.disabled = false;
+                    }
+                    if (elements.formatButton) {
+                        elements.formatButton.disabled = false;
+                    }
+                    isLoading = false;
+                }
+            } catch (error) {
+                console.error('Error loading Pyodide:', error);
+                handleLoadError(error);
+            }
+        }
+
+        // Handle loading errors
+        function handleLoadError(error) {
+            isLoading = false;
+            if (elements.loadingText) {
+                elements.loadingText.textContent = '(Failed to load)';
+                elements.loadingText.classList.add('error-text');
+            }
+            if (elements.runButton) {
+                elements.runButton.disabled = true;
+            }
+            if (elements.formatButton) {
+                elements.formatButton.disabled = true;
+            }
+            if (elements.outputConsole) {
+                elements.outputConsole.textContent = `Failed to load Python environment: ${error.message}`;
+            }
+        }
+
+        // Update UI state
+        function updateUIState(running) {
+            if (!elements.runButton || !elements.buttonText || !elements.playIcon || !elements.loaderIcon) return;
+
+            elements.runButton.disabled = running;
+            elements.formatButton.disabled = running;
+            elements.buttonText.textContent = running ? 'Running...' : 'Run';
+            elements.playIcon.style.display = running ? 'none' : 'inline';
+            elements.loaderIcon.style.display = running ? 'inline' : 'none';
+        }
+
+        // Run Python code
+        async function runCode() {
+            if (!pyodide || isRunning || !elements.codeEditor || !elements.inputEditor || !elements.outputConsole) return;
+            
+            isRunning = true;
+            updateUIState(true);
+            elements.outputConsole.textContent = '';
+
+            try {
+                // Format code before running to prevent indentation issues
+                formatCode();
+                
+                const inputLines = elements.inputEditor.value.split('\n');
+                const code = elements.codeEditor.value;
+                
+                const inputFunction = `
+def input():
+    global current_input_line, input_lines
+    if current_input_line < len(input_lines):
+        line = input_lines[current_input_line]
+        current_input_line += 1
+        return line
+    return ''
+`;
+                
+                await pyodide.runPythonAsync(`
+input_lines = ${JSON.stringify(inputLines)}
+current_input_line = 0
+${inputFunction}
+`);
+                
+                let output = '';
+                pyodide.setStdout({
+                    batched: (text) => {
+                        output += text + '\n';
+                    }
+                });
+
+                await pyodide.runPythonAsync(code);
+                elements.outputConsole.textContent = output;
+                
+            } catch (error) {
+                elements.outputConsole.textContent = `Error: ${error.message}`;
+            } finally {
+                isRunning = false;
+                updateUIState(false);
+            }
+        }
+
+        // Initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeElements();
+            loadPyodide().catch(handleLoadError);
+        });
+    </script>
+</body>
+</html>
